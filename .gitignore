@@ -1,0 +1,37 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ===== Environnement virtuel =====
+.venv/
+venv/
+ENV/
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Environnement =====
+.env
+*.env
+
+# ===== Base de données locale =====
+*.db
+*.sqlite3
+
+# ===== FAISS index =====
+*.faiss
+
+# ===== Thumbnails cache =====
+.thumbnails/
