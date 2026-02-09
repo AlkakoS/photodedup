@@ -24,7 +24,7 @@ def validate_scan_root(path: Path) -> None:
         raise FileNotFoundError(f"Le chemin '{path}' n'existe pas.")
 
     if not path.is_dir():
-        raise NotADirectoryError(f"'{path.name}' n'est pas un dossier")
+        raise NotADirectoryError(f"'{path.name}' n'est pas un dossier.")
 
     if is_ignored_dirname(path.name):
         raise ValueError(f"Dossier ignoré: {path}")
