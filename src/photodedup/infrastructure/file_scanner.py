@@ -80,10 +80,13 @@ def scan_directory(path: Path):
 
     Cette fonction :
       1) valide le dossier racine,
-      2) parcourt tous les chemins via rglob("*"),
-      3) filtre les chemins non pertinents (dossiers ignorés, dossiers, symlinks, non-images),
-      4) crée des ImageFile avec ImageFile.from_path,
-      5) collecte les erreurs d'accès (PermissionError/OSError) sous forme de messages.
+      2) parcourt l'arborescence via Path.walk() (récursif),
+      3) ignore certains dossiers (préfixes/nom via is_ignored_dirname),
+      4) filtre les chemins non pertinents (dossiers, symlinks, non-images),
+      5) crée des ImageFile avec ImageFile.from_path,
+      6) collecte les erreurs d'accès :
+         - erreurs de parcours (dossiers non accessibles) via on_error,
+         - erreurs sur fichiers via try/except autour de from_path.
 
     Args:
         path: Dossier racine à scanner.
@@ -91,18 +94,28 @@ def scan_directory(path: Path):
     Returns:
         Un tuple (images, errors) où :
           - images : liste d'ImageFile créés avec succès,
-          - errors : liste de messages d'erreur (str) pour les fichiers non lisibles.
+          - errors : liste de messages d'erreur (str) pour les dossiers/fichiers non accessibles.
     """
     validate_scan_root(path)
 
     images, errors = [], []
-    for file in path.rglob("*"):
-        if not should_scan_file(path, file):
-            continue
 
-        try:
-            images.append(ImageFile.from_path(file))
-        except (PermissionError, OSError) as e:
-            errors.append(f"{file}: {e}")
+    def handle_error(e: OSError):
+        errors.append(f"Dossier inacessible : {e.filename} ({e.strerror})")
+
+    for dirpath, dirnames, filenames in path.walk(on_error=handle_error):
+        dirnames[:] = [d for d in dirnames if not is_ignored_dirname(d)]
+
+        for filename in filenames:
+            file_path = dirpath / filename
+
+            if not should_scan_file(path, file_path):
+                continue
+
+            try:
+                images.append(ImageFile.from_path(file_path))
+            except (FileNotFoundError, PermissionError, OSError) as e:
+                print("Une erreurs")
+                errors.append(f"Fichier inacessible : {file_path}: {e}")
 
     return images, errors
