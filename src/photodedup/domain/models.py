@@ -58,6 +58,11 @@ class ImageFile:
         """Vérifie si l'extension est supporté."""
         return self.extension in SUPPORTED_EXTENSIONS
 
+    @classmethod
+    def from_path(cls, path: Path) -> "ImageFile":
+        stat = path.stat()
+        return cls(path=path, size=stat.st_size, modified_at=datetime.fromtimestamp(stat.st_mtime))
+
 
 def is_image_extension(path: Path) -> bool:
     """Vérifie si un chemin pointe vers un fichier image supporté."""
