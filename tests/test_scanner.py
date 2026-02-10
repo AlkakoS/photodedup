@@ -16,7 +16,7 @@ class TestScanDirectory:
         sous_dossier.mkdir()
         (sous_dossier / "deep.gif").write_bytes(b"fake gif data")
 
-        images, errors = scan_directory(tmp_path)
+        images, errors, skipped_folders, skipped_files = scan_directory(tmp_path)
 
         assert len(images) == 3
         assert len(errors) == 0
@@ -32,7 +32,7 @@ class TestScanDirectory:
         (tmp_path / "notes.txt").write_bytes(b"text content")
         (tmp_path / "video.mp4").write_bytes(b"video content")
 
-        images, errors = scan_directory(tmp_path)
+        images, errors, skipped_folders, skipped_files = scan_directory(tmp_path)
 
         assert len(images) == 1
         assert images[0].filename == "photo.jpg"
@@ -47,7 +47,7 @@ class TestScanDirectory:
         dossier_cache.mkdir()
         (dossier_cache / "secret.jpg").write_bytes(b"secret image")
 
-        images, errors = scan_directory(tmp_path)
+        images, errors, skipped_folders, skipped_files = scan_directory(tmp_path)
 
         assert len(images) == 1
         assert images[0].filename == "visible.jpg"
@@ -64,7 +64,7 @@ class TestScanDirectory:
         pycache.mkdir()
         (pycache / "cached.png").write_bytes(b"cached images")
 
-        images, errors = scan_directory(tmp_path)
+        images, errors, skipped_folders, skipped_files = scan_directory(tmp_path)
 
         assert len(images) == 1
         assert images[0].filename == "photo.jpg"
@@ -74,7 +74,7 @@ class TestScanDirectory:
 
         dossier_faux = tmp_path / "nexiste_pas"
 
-        images, errors = scan_directory(dossier_faux)
+        images, errors, skipped_folders, skipped_files = scan_directory(dossier_faux)
 
         assert images == []
         assert any("Dossier introuvable : " in e for e in errors)
@@ -85,7 +85,7 @@ class TestScanDirectory:
         fichier = tmp_path / "photo.jpg"
         fichier.write_bytes(b"images data")
 
-        images, errors = scan_directory(fichier)
+        images, errors, skipped_folders, skipped_files = scan_directory(fichier)
 
         assert images == []
         assert any(f"{fichier} n'est pas un dossier." in e for e in errors)
@@ -93,7 +93,7 @@ class TestScanDirectory:
     def test_scan_dossier_vide(self, tmp_path):
         """Un dossier vide ne doit pas causer d'erreur."""
 
-        images, errors = scan_directory(tmp_path)
+        images, errors, skipped_folders, skipped_files = scan_directory(tmp_path)
 
         assert len(images) == 0
         assert len(errors) == 0
@@ -105,7 +105,7 @@ class TestScanDirectory:
         (tmp_path / "image.Png").write_bytes(b"png mixed case")
         (tmp_path / "gif.GIF").write_bytes(b"gif uppercase")
 
-        images, errors = scan_directory(tmp_path)
+        images, errors, skipped_folders, skipped_files = scan_directory(tmp_path)
 
         assert len(images) == 3
 
@@ -119,7 +119,7 @@ class TestScanDirectory:
         contenu = b"X" * 100
         fichier.write_bytes(contenu)
 
-        images, errors = scan_directory(tmp_path)
+        images, errors, skipped_folders, skipped_files = scan_directory(tmp_path)
 
         assert len(images) == 1
 
