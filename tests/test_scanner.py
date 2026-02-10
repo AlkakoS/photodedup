@@ -2,11 +2,7 @@
 
 import pytest
 
-from photodedup.infrastructure.file_scanner import (
-    is_ignored_dirname,
-    scan_directory,
-    validate_scan_root,
-)
+from photodedup.infrastructure.file_scanner import is_ignored_dirname, scan_directory
 
 
 class TestScanDirectory:
@@ -78,10 +74,10 @@ class TestScanDirectory:
 
         dossier_faux = tmp_path / "nexiste_pas"
 
-        with pytest.raises(FileNotFoundError) as err_info:
-            scan_directory(dossier_faux)
+        images, errors = scan_directory(dossier_faux)
 
-        assert f"Le chemin '{dossier_faux}' n'existe pas." in str(err_info.value)
+        assert images == []
+        assert any("Dossier introuvable : " in e for e in errors)
 
     def test_scan_fichier_pas_dossier(self, tmp_path):
         """Scanner un fichier doit lever NotADirectoryError."""
@@ -89,10 +85,10 @@ class TestScanDirectory:
         fichier = tmp_path / "photo.jpg"
         fichier.write_bytes(b"images data")
 
-        with pytest.raises(NotADirectoryError) as err_info:
-            scan_directory(fichier)
+        images, errors = scan_directory(fichier)
 
-        assert f"'{fichier.name}' n'est pas un dossier." in str(err_info.value)
+        assert images == []
+        assert any(f"{fichier} n'est pas un dossier." in e for e in errors)
 
     def test_scan_dossier_vide(self, tmp_path):
         """Un dossier vide ne doit pas causer d'erreur."""
@@ -150,7 +146,7 @@ class TestScanDirectory:
         with pytest.raises(ValueError) as err_info:
             scan_directory(dossier)
 
-        assert f"Dossier ignoré: {dossier}" in str(err_info.value)
+        assert f"Le dossier {dossier.name} ne peut pas être scanné." in str(err_info.value)
 
 
 class TestIsIgnoredDirname:
@@ -170,28 +166,3 @@ class TestIsIgnoredDirname:
     def test_dossier_normal(self):
         assert is_ignored_dirname("photos") is False
         assert is_ignored_dirname("Images") is False
-
-
-class TestValidateScanRoot:
-    """Tests pour validate_scan_root."""
-
-    def test_dossier_valide(self, tmp_path):
-        validate_scan_root(tmp_path)
-
-    def test_chemin_inexistant(self, tmp_path):
-        faux = tmp_path / "nexiste_pas"
-        with pytest.raises(FileNotFoundError):
-            validate_scan_root(faux)
-
-    def test_pas_un_dossier(self, tmp_path):
-        fichier = tmp_path / "test.txt"
-        fichier.write_text("test")
-        with pytest.raises(NotADirectoryError):
-            validate_scan_root(fichier)
-
-    def test_dossier_ignore(self, tmp_path):
-        cache = tmp_path / ".git"
-        cache.mkdir()
-        with pytest.raises(ValueError) as exc_info:
-            validate_scan_root(cache)
-        assert "ignoré" in str(exc_info.value)
