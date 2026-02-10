@@ -33,19 +33,21 @@ def scan_directory(path: Path):
     if is_ignored_dirname(path.name):
         raise ValueError(f"Le dossier {path.name} ne peut pas être scanné.")
 
-    images, errors = [], []
+    images, errors, skipped_folders, skipped_files = [], [], [], []
 
     def handle_error(e: OSError) -> None:
         errors.append(format_scan_error(e, source="Dossier"))
 
     try:
         for dirpath, dirnames, filenames in path.walk(on_error=handle_error):
+            skipped_folders.extend(dirpath / d for d in dirnames if is_ignored_dirname(d))
             dirnames[:] = [d for d in dirnames if not is_ignored_dirname(d)]
 
             for filename in filenames:
                 file_path = dirpath / filename
 
                 if not should_scan_file(file_path):
+                    skipped_files.append(file_path)
                     continue
 
                 try:
@@ -55,4 +57,4 @@ def scan_directory(path: Path):
     except OSError as e:
         errors.append(format_scan_error(e, source="Dossier"))
 
-    return images, errors
+    return images, errors, skipped_folders, skipped_files
