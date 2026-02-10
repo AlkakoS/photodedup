@@ -55,6 +55,19 @@ class TestImageFile:
         img = self._make_image("notes.txt")
         assert img.is_supported() is False
 
+    def test_from_path(self, tmp_path):
+        """Test que from_path lit correctement les infos du fichier."""
+        fichier_test = tmp_path / "photo.jpg"
+        contenu = b"fake image data"
+        fichier_test.write_bytes(contenu)
+
+        image = ImageFile.from_path(fichier_test)
+
+        assert image.path == fichier_test
+        assert image.size == len(contenu)
+        assert isinstance(image.modified_at, datetime)
+        assert image.modified_at is not None
+
 
 class TestIsImageExtension:
     """Tests pour la fonction is_image_extension."""

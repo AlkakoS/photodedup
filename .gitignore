@@ -35,3 +35,6 @@ Thumbs.db
 
 # ===== Thumbnails cache =====
 .thumbnails/
+
+# ===== Testing tools ======
+tools_test
