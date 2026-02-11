@@ -74,10 +74,10 @@ class TestScanDirectory:
 
         dossier_faux = tmp_path / "nexiste_pas"
 
-        images, errors, skipped_folders, skipped_files = scan_directory(dossier_faux)
+        with pytest.raises(FileNotFoundError) as excinfo:
+            scan_directory(dossier_faux)
 
-        assert images == []
-        assert any("Dossier introuvable : " in e for e in errors)
+        assert f"Ce ({dossier_faux}) n'existe pas." in str(excinfo.value)
 
     def test_scan_fichier_pas_dossier(self, tmp_path):
         """Scanner un fichier doit lever NotADirectoryError."""
@@ -85,10 +85,10 @@ class TestScanDirectory:
         fichier = tmp_path / "photo.jpg"
         fichier.write_bytes(b"images data")
 
-        images, errors, skipped_folders, skipped_files = scan_directory(fichier)
+        with pytest.raises(NotADirectoryError) as excinfo:
+            scan_directory(fichier)
 
-        assert images == []
-        assert any(f"{fichier} n'est pas un dossier." in e for e in errors)
+        assert f"Le chemin ({fichier}) n'est pas un dossier." in str(excinfo.value)
 
     def test_scan_dossier_vide(self, tmp_path):
         """Un dossier vide ne doit pas causer d'erreur."""

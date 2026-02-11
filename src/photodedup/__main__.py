@@ -15,6 +15,7 @@ def main() -> int:
     path = Path(args_str)
 
     print(f"📂 Scan de : {path.name}")
+    print("⏳ Scan en cours...\n")
 
     start = perf_counter()
     try:
@@ -29,73 +30,65 @@ def main() -> int:
         print(f"\nErreur : {e}")
         return 1
 
-    print("⏳ Scan en cours...\n")
-
     end = perf_counter()
     count_time = end - start
 
     print(f"✅ Scan terminé en {count_time:.2f}s\n")
     print(f"📊 Résumé:\n - Images trouvées : {len(images)}\n - Erreurs : {len(errors)}\n")
-    print("📋 Images :")
-    if len(errors) == 0:
-        print("Aucune image")
-    else:
-        limit_display(images, "images")
 
-    print("⚠️  Erreurs :")
-    if len(errors) == 0:
-        print("Aucune erreur")
-    else:
-        limit_display(errors, "errors")
-
-    print("⚠️  Dossiers ignorés :")
-    if len(skipped_folders) == 0:
-        print("Aucun dossier ignoré.")
-    else:
-        limit_display(skipped_folders, "skipped_folders")
-
-    print("⚠️  Fichiers ignorés :")
-    if len(skipped_files) == 0:
-        print("Aucun fichier ignoré.")
-    else:
-        limit_display(skipped_files, "skipped_files")
+    print_list_section("Images", images, "Aucune image.", "images")
+    print()
+    print_list_section("Erreurs", errors, "Aucune erreur.", "errors")
+    print()
+    print_list_section(
+        "Dossiers ignorés", skipped_folders, "Aucun dossier ignoré.", "skipped_folders"
+    )
+    print()
+    print_list_section("Fichiers ignorés", skipped_files, "Aucun fichier ignoré.", "skipped_files")
 
     return 0
 
 
-def limit_display(items, label):
-    if label == "images":
-        if len(items) <= 20:
-            for count, img in enumerate(items, start=1):
-                print(f" {count}. {img.path}, {img.size}, {img.modified_at}")
-        else:
-            for count, img in enumerate(items[:10], start=1):
-                print(f" {count}. {img.path}, {img.size}, {img.modified_at}")
-            print(f"... et {len(items) - 10} autres images")
-    elif label == "errors":
-        if len(items) <= 20:
-            for count, err in enumerate(items, start=1):
-                print(f" {count}. {err}")
-        else:
-            for count, err in enumerate(items[:10], start=1):
-                print(f" {count}. {err}")
-            print(f"... et {len(items) - 10} autres erreurs")
-    elif label == "skipped_folders":
-        if len(items) <= 20:
-            for count, err in enumerate(items, start=1):
-                print(f" {count}. {err}")
-        else:
-            for count, err in enumerate(items[:10], start=1):
-                print(f" {count}. {err}")
-            print(f"... et {len(items) - 10} autres dossiers ignorés")
+def print_list_section(title, items, message, kind):
+    if title == "Images":
+        print(f"📋 {title} :")
     else:
-        if len(items) <= 20:
-            for count, err in enumerate(items, start=1):
-                print(f" {count}. {err}")
-        else:
-            for count, err in enumerate(items[:10], start=1):
-                print(f" {count}. {err}")
-            print(f"... et {len(items) - 10} autres fichiers ignorés")
+        print(f"⚠️  {title} :")
+
+    if len(items) == 0:
+        print(message)
+    else:
+        limit_display(items, kind)
+
+
+def limit_display(items, label):
+    match label:
+        case "images":
+            display_setup(items, display_message_images, "images.")
+        case "errors":
+            display_setup(items, display_message_autres, "erreurs.")
+        case "skipped_folders":
+            display_setup(items, display_message_autres, "dossiers ignorés.")
+        case _:
+            display_setup(items, display_message_autres, "fichiers ignorés.")
+
+
+def display_setup(items, display_messages, message):
+    if len(items) >= 20:
+        for count, item in enumerate(items[:10], start=1):
+            display_messages(count, item)
+        print(f"... et {len(items) - 10} autres {message}")
+    else:
+        for count, item in enumerate(items, start=1):
+            display_messages(count, item)
+
+
+def display_message_images(count, item):
+    print(f" {count}. {item.path}, {item.size}, {item.modified_at}")
+
+
+def display_message_autres(count, item):
+    print(f" {count}. {item}")
 
 
 if __name__ == "__main__":
