@@ -10,10 +10,13 @@ def is_ignored_dirname(name: str) -> bool:
 
 
 def should_scan_file(file: Path) -> bool:
-    if file.is_dir() or file.is_symlink():
+    if not is_image_extension(file):
         return False
 
-    return is_image_extension(file)
+    if file.is_symlink():
+        return False
+
+    return True
 
 
 def format_scan_error(error: OSError, source: str) -> str:
@@ -29,7 +32,11 @@ def format_scan_error(error: OSError, source: str) -> str:
         return f"{source} - Erreur d'accès : {location} ({error.strerror})"
 
 
-def scan_directory(path: Path):
+def scan_directory(path: Path) -> tuple[list[ImageFile], list[str], list[Path], list[Path]]:
+    if not path.exists():
+        raise FileNotFoundError(f"Ce ({path}) n'existe pas.")
+    if not path.is_dir():
+        raise NotADirectoryError(f"Le chemin ({path}) n'est pas un dossier.")
     if is_ignored_dirname(path.name):
         raise ValueError(f"Le dossier {path.name} ne peut pas être scanné.")
 
