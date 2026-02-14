@@ -67,3 +67,18 @@ class ImageFile:
 def is_image_extension(path: Path) -> bool:
     """Vérifie si un chemin pointe vers un fichier image supporté."""
     return path.suffix.lower() in SUPPORTED_EXTENSIONS
+
+
+@dataclass
+class DuplicateGroup:
+    hash: str
+    imagefiles: list
+    detection: str
+
+    @property
+    def extra_files(self) -> int:
+        return len(self.imagefiles) - 1
+
+    @property
+    def wasted_space(self) -> int:
+        return self.imagefiles[0].size * len(self.imagefiles)
