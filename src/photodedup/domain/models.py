@@ -81,4 +81,4 @@ class DuplicateGroup:
 
     @property
     def wasted_space(self) -> int:
-        return self.imagefiles[0].size * len(self.imagefiles)
+        return self.imagefiles[0].size * (len(self.imagefiles) - 1)
