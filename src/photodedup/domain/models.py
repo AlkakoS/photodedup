@@ -42,18 +42,6 @@ class ImageFile:
         """Extension en minuscule (ex: '.jpg')."""
         return self.path.suffix.lower()
 
-    @property
-    def size_human(self) -> str:
-        """Taille lisible (ex: '2.4 Mo')."""
-        if self.size < 1024:
-            return f"{self.size} o"
-        elif self.size < 1024**2:
-            return f"{self.size / 1024:.1f} Ko"
-        elif self.size < 1024**3:
-            return f"{self.size / 1024**2:.1f} Mo"
-        else:
-            return f"{self.size / 1024**3:.1f} Go"
-
     def is_supported(self) -> bool:
         """Vérifie si l'extension est supporté."""
         return self.extension in SUPPORTED_EXTENSIONS
