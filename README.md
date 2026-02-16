@@ -20,8 +20,8 @@ puis vous permet de les **envoyer à la corbeille** (par défaut) ou de les **su
 
 ## Statut
 
-- [✅] v0.1.0 — Scanner de fichiers
-- [ ] v0.2.0 — Détection doublons exacts
+- ✅ v0.1.0 — Scanner de fichiers
+- ✅ v0.2.0 — Détection doublons exacts
 - [ ] v0.3.0 — Base de données
 - [ ] v0.4.0 — Interface desktop
 - [ ] v0.5.0 — Affichage + suppression
