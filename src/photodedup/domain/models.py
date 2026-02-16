@@ -42,18 +42,6 @@ class ImageFile:
         """Extension en minuscule (ex: '.jpg')."""
         return self.path.suffix.lower()
 
-    @property
-    def size_human(self) -> str:
-        """Taille lisible (ex: '2.4 Mo')."""
-        if self.size < 1024:
-            return f"{self.size} o"
-        elif self.size < 1024**2:
-            return f"{self.size / 1024:.1f} Ko"
-        elif self.size < 1024**3:
-            return f"{self.size / 1024**2:.1f} Mo"
-        else:
-            return f"{self.size / 1024**3:.1f} Go"
-
     def is_supported(self) -> bool:
         """Vérifie si l'extension est supporté."""
         return self.extension in SUPPORTED_EXTENSIONS
@@ -67,3 +55,22 @@ class ImageFile:
 def is_image_extension(path: Path) -> bool:
     """Vérifie si un chemin pointe vers un fichier image supporté."""
     return path.suffix.lower() in SUPPORTED_EXTENSIONS
+
+
+@dataclass
+class DuplicateGroup:
+    hash: str
+    imagefiles: list
+    detection: str
+
+    @property
+    def extra_files(self) -> int:
+        return len(self.imagefiles) - 1
+
+    @property
+    def wasted_space(self) -> int:
+        return self.imagefiles[0].size * (len(self.imagefiles) - 1)
+
+    @property
+    def total_size(self) -> int:
+        return sum(img.size for img in self.imagefiles)

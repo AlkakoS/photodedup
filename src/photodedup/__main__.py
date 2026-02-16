@@ -2,7 +2,10 @@ import sys
 from pathlib import Path
 from time import perf_counter
 
+from photodedup.domain.services import find_exact_duplicates
 from photodedup.infrastructure.file_scanner import scan_directory
+from photodedup.infrastructure.hasher import compute_hash, compute_partial_hash
+from photodedup.ui.formatters import format_size
 
 
 def main() -> int:
@@ -33,8 +36,49 @@ def main() -> int:
     end = perf_counter()
     count_time = end - start
 
+    print(f"✅ Scan terminé en {count_time:.2f}s - {len(images)} trouvées\n")
+
+    print("🔍 Détection des doublons avec hash complet ...")
+    start = perf_counter()
+    duplicates = find_exact_duplicates(images, compute_hash)
+    end = perf_counter()
+    count_time = end - start
     print(f"✅ Scan terminé en {count_time:.2f}s\n")
-    print(f"📊 Résumé:\n - Images trouvées : {len(images)}\n - Erreurs : {len(errors)}\n")
+
+    print("🔍 Détection des doublons avec partial hash ...")
+    start = perf_counter()
+    duplicates = find_exact_duplicates(images, compute_partial_hash)
+    end = perf_counter()
+    count_time = end - start
+    print(f"✅ Scan terminé en {count_time:.2f}s\n")
+
+    print("📊 Résumé:\n")
+    print(f"Images scannées : {len(images)}\n")
+    print(f"Groupes de doublons : {len(duplicates)}\n")
+    number_of_duplicates = []
+    total_occupied_size = []
+    for d in duplicates:
+        number_of_duplicates.append(d.extra_files)
+        total_occupied_size.append(d.wasted_space)
+
+    print(f"Fichiers en double : {sum(number_of_duplicates)}\n")
+    print(f"Espace gaspillé : {format_size(sum(total_occupied_size))}")
+
+    print("📋 Groupe de doublons :\n")
+    sorted_duplicates = sorted(duplicates, key=lambda group: group.total_size, reverse=True)
+    for count, group in enumerate(sorted_duplicates, start=1):
+        print(
+            f"Group {count} - {len(group.imagefiles)} fichers identiques ({format_size(group.wasted_space)} gaspillés)"
+        )
+        for img in group.imagefiles:
+            print(f"-> {img.path} ({format_size(img.size)})")
+        print()
+
+        if count >= 5:
+            print(
+                f"... {len(sorted_duplicates) - count} {'autre groupe' if len(sorted_duplicates) - count == 1 else 'autres groupes'}\n"
+            )
+            break
 
     print_list_section("Images", images, "Aucune image.", "images")
     print()
